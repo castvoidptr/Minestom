@@ -3,6 +3,7 @@ package net.minestom.server.item;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.minestom.server.component.DataComponent;
 import net.minestom.server.component.DataComponentMap;
+import net.minestom.server.entity.Player;
 import net.minestom.server.item.component.CustomData;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.utils.validate.Check;
@@ -12,18 +13,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-record ItemStackImpl(Material material, int amount, DataComponentMap components) implements ItemStack {
+public class ItemStackImpl implements ItemStack, IComponentable {
+    private final Material material;
+    private final int amount;
+    public final DataComponentMap components;
+    public ItemStackImpl(Material material, int amount, DataComponentMap components)
+    {
+        this.material = material;
+        this.amount = amount;
+        this.components = components;
 
-    static ItemStack create(Material material, int amount, DataComponentMap components) {
-        if (amount <= 0) return AIR;
-        return new ItemStackImpl(material, amount, components);
-    }
-
-    static ItemStack create(Material material, int amount) {
-        return create(material, amount, DataComponentMap.EMPTY);
-    }
-
-    public ItemStackImpl {
         Check.notNull(material, "Material cannot be null");
 
         // It is relevant to create the minimal diff of the prototype so that #isSimilar returns consistent
@@ -38,6 +37,15 @@ record ItemStackImpl(Material material, int amount, DataComponentMap components)
         components = DataComponentMap.diff(material.prototype(), components);
     }
 
+    static ItemStack create(Material material, int amount, DataComponentMap components) {
+        if (amount <= 0) return AIR;
+        return new ItemStackImpl(material, amount, components);
+    }
+
+    static ItemStack create(Material material, int amount) {
+        return create(material, amount, DataComponentMap.EMPTY);
+    }
+
     @Override
     public <T> @Nullable T get(@NotNull DataComponent<T> component) {
         return components.get(material.prototype(), component);
@@ -46,6 +54,26 @@ record ItemStackImpl(Material material, int amount, DataComponentMap components)
     @Override
     public boolean has(@NotNull DataComponent<?> component) {
         return components.has(material.prototype(), component);
+    }
+
+    @Override
+    public @NotNull Material material() {
+        return this.material;
+    }
+
+    @Override
+    public int amount() {
+        return this.amount;
+    }
+
+    public DataComponentMap components()
+    {
+        return this.components;
+    }
+
+    public DataComponentMap components(Player player)
+    {
+        return this.components;
     }
 
     @Override

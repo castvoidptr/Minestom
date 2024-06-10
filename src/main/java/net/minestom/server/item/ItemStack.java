@@ -30,8 +30,7 @@ import java.util.function.UnaryOperator;
  * <p>
  * An item stack cannot be null, {@link ItemStack#AIR} should be used instead.
  */
-public sealed interface ItemStack extends TagReadable, DataComponent.Holder, HoverEventSource<HoverEvent.ShowItem>
-        permits ItemStackImpl {
+public interface ItemStack extends TagReadable, DataComponent.Holder, HoverEventSource<HoverEvent.ShowItem>, IComponentable {
 
     @NotNull NetworkBuffer.Type<ItemStack> NETWORK_TYPE = new NetworkBuffer.Type<>() {
         @Override
@@ -43,7 +42,7 @@ public sealed interface ItemStack extends TagReadable, DataComponent.Holder, Hov
 
             buffer.write(NetworkBuffer.VAR_INT, value.amount());
             buffer.write(NetworkBuffer.VAR_INT, value.material().id());
-            buffer.write(DataComponentMap.PATCH_NETWORK_TYPE, ((ItemStackImpl) value).components());
+            buffer.write(DataComponentMap.PATCH_NETWORK_TYPE, value.components(buffer.getPlayerConnection().getPlayer()));
         }
 
         @Override

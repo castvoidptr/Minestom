@@ -19,14 +19,14 @@ import java.util.Collection;
  *
  * @see net.minestom.server.item.ItemComponent
  */
-public sealed interface DataComponent<T> extends StaticProtocolObject permits DataComponentImpl {
+public interface DataComponent<T> extends StaticProtocolObject {
 
     /**
      * Represents any type which can hold data components. Represents a finalized view of a component, that is to say
      * an implementation may represent a patch on top of another Holder, however the return values of this type
      * will always represent the merged view.
      */
-    interface Holder {
+    public interface Holder {
         boolean has(@NotNull DataComponent<?> component);
 
         <T> @Nullable T get(@NotNull DataComponent<T> component);

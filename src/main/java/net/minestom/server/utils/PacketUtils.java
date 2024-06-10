@@ -109,13 +109,6 @@ public final class PacketUtils {
         });
     }
 
-    /**
-     * Checks if the {@link ServerPacket} is suitable to be wrapped into a {@link CachedPacket}.
-     * Note: {@link ServerPacket.ComponentHolding}s are not translated inside a {@link CachedPacket}.
-     *
-     * @see CachedPacket#body(ConnectionState)
-     * @see PlayerSocketConnection#writePacketSync(SendablePacket, boolean)
-     */
     static boolean shouldUseCachePacket(final @NotNull ServerPacket packet) {
         if (!MinestomAdventure.AUTOMATIC_COMPONENT_TRANSLATION) return ServerFlag.GROUPED_PACKET;
         if (!(packet instanceof ServerPacket.ComponentHolding holder)) return ServerFlag.GROUPED_PACKET;
@@ -247,6 +240,14 @@ public final class PacketUtils {
     public static void writeFramedPacket(@NotNull ConnectionState state,
                                          @NotNull ByteBuffer buffer,
                                          @NotNull ServerPacket packet,
+                                         boolean compression, PlayerConnection connection) {
+        writeFramedPacket(buffer, packet.getId(state), packet,
+                compression ? MinecraftServer.getCompressionThreshold() : 0, connection);
+    }
+
+    public static void writeFramedPacket(@NotNull ConnectionState state,
+                                         @NotNull ByteBuffer buffer,
+                                         @NotNull ServerPacket packet,
                                          boolean compression) {
         writeFramedPacket(buffer, packet.getId(state), packet,
                 compression ? MinecraftServer.getCompressionThreshold() : 0);
@@ -255,8 +256,19 @@ public final class PacketUtils {
     public static void writeFramedPacket(@NotNull ByteBuffer buffer,
                                          int id,
                                          @NotNull NetworkBuffer.Writer writer,
-                                         int compressionThreshold) {
+                                         int compressionThreshold)
+    {
+        writeFramedPacket(buffer, id, writer, compressionThreshold, null);
+    }
+
+    public static void writeFramedPacket(@NotNull ByteBuffer buffer,
+                                         int id,
+                                         @NotNull NetworkBuffer.Writer writer,
+                                         int compressionThreshold, PlayerConnection connection) {
         NetworkBuffer networkBuffer = new NetworkBuffer(buffer, false);
+
+        networkBuffer.setPlayerConnection(connection);
+
         if (compressionThreshold <= 0) {
             // Uncompressed format https://wiki.vg/Protocol#Without_compression
             final int lengthIndex = networkBuffer.skipWrite(3);
@@ -294,6 +306,12 @@ public final class PacketUtils {
         Utils.writeVarIntHeader(buffer, uncompressedIndex, compressed ? packetSize : 0);
 
         buffer.position(networkBuffer.writeIndex());
+    }
+
+    @ApiStatus.Internal
+    public static ByteBuffer createFramedPacket(@NotNull ConnectionState state, @NotNull ByteBuffer buffer, @NotNull ServerPacket packet, boolean compression, PlayerConnection connection) {
+        writeFramedPacket(state, buffer, packet, compression, connection);
+        return buffer.flip();
     }
 
     @ApiStatus.Internal

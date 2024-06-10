@@ -33,8 +33,9 @@ public class PacketProcessor {
         this.packetListenerManager = packetListenerManager;
     }
 
-    public @NotNull ClientPacket create(@NotNull ConnectionState connectionState, int packetId, ByteBuffer body) {
+    public @NotNull ClientPacket create(@NotNull ConnectionState connectionState, int packetId, ByteBuffer body, PlayerConnection connection) {
         NetworkBuffer buffer = new NetworkBuffer(body);
+        buffer.setPlayerConnection(connection);
         final ClientPacket clientPacket = switch (connectionState) {
             case HANDSHAKE -> {
                 assert packetId == 0;
@@ -50,7 +51,7 @@ public class PacketProcessor {
     }
 
     public ClientPacket process(@NotNull PlayerConnection connection, int packetId, ByteBuffer body) {
-        final ClientPacket packet = create(connection.getConnectionState(), packetId, body);
+        final ClientPacket packet = create(connection.getConnectionState(), packetId, body, connection);
 
         switch (connection.getConnectionState()) {
             // Process all pre-config packets immediately

@@ -5,6 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Entity;
+import net.minestom.server.network.player.PlayerConnection;
 import net.minestom.server.registry.DynamicRegistry;
 import net.minestom.server.registry.ProtocolObject;
 import net.minestom.server.registry.Registries;
@@ -26,7 +27,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @ApiStatus.Experimental
-public final class NetworkBuffer {
+public class NetworkBuffer {
     public static final Type<Unit> UNIT = new NetworkBufferTypeImpl.UnitType();
     public static final Type<Boolean> BOOLEAN = new NetworkBufferTypeImpl.BooleanType();
     public static final Type<Byte> BYTE = new NetworkBufferTypeImpl.ByteType();
@@ -93,6 +94,18 @@ public final class NetworkBuffer {
 
     // In the future, this should be passed as a parameter.
     final Registries registries = MinecraftServer.process();
+
+    PlayerConnection playerConnection = null;
+
+    public PlayerConnection getPlayerConnection()
+    {
+        return this.playerConnection;
+    }
+
+    public void setPlayerConnection(PlayerConnection connection)
+    {
+        this.playerConnection = connection;
+    }
 
     public NetworkBuffer(@NotNull ByteBuffer buffer, boolean resizable) {
         this.nioBuffer = buffer.order(ByteOrder.BIG_ENDIAN);

@@ -166,7 +166,7 @@ public non-sealed class PlayerInventory extends AbstractInventory implements Equ
      *                  see {@link net.minestom.server.utils.inventory.PlayerInventoryUtils#convertToPacketSlot(int)}
      * @param itemStack the item stack in the slot
      */
-    protected void sendSlotRefresh(short slot, ItemStack itemStack) {
+    public void sendSlotRefresh(short slot, ItemStack itemStack) {
         var openInventory = player.getOpenInventory();
         if (openInventory != null && slot >= OFFSET && slot < OFFSET + INNER_INVENTORY_SIZE) {
             this.player.sendPacket(new SetSlotPacket(openInventory.getWindowId(), 0, (short) (slot + openInventory.getSize() - OFFSET), itemStack));

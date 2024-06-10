@@ -25,6 +25,7 @@ public sealed interface ServerPacket extends NetworkBuffer.Writer, SendablePacke
      *
      * @return the id of this packet
      */
+
     default int getId(@NotNull ConnectionState state) {
         final int id = switch (state) {
             case HANDSHAKE -> -1;

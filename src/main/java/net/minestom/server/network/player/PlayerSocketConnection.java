@@ -99,6 +99,7 @@ public class PlayerSocketConnection extends PlayerConnection {
                         if (!isOnline())
                             return; // Prevent packet corruption
                         ClientPacket packet = null;
+
                         try {
                             packet = packetProcessor.process(this, id, payload);
                         } catch (Exception e) {
@@ -325,7 +326,7 @@ public class PlayerSocketConnection extends PlayerConnection {
             }
         }
         try (var hold = ObjectPool.PACKET_POOL.hold()) {
-            var buffer = PacketUtils.createFramedPacket(getConnectionState(), hold.get(), serverPacket, compressed);
+            var buffer = PacketUtils.createFramedPacket(getConnectionState(), hold.get(), serverPacket, compressed, this);
             writeBufferSync(buffer, 0, buffer.limit());
         }
     }
