@@ -13,7 +13,7 @@ dependencies {
 
 tasks {
     application {
-        mainClass.set("net.minestom.demo.Main")
+        mainClass.set("net.deltamc.TestServer")
     }
 
     withType<ShadowJar> {
