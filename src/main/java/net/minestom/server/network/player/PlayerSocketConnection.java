@@ -295,7 +295,7 @@ public class PlayerSocketConnection extends PlayerConnection {
         final Player player = getPlayer();
         // Outgoing event
         if (player != null && outgoing.hasListener()) {
-            final ServerPacket serverPacket = SendablePacket.extractServerPacket(getConnectionState(), packet);
+            final ServerPacket serverPacket = SendablePacket.extractServerPacket(getConnectionState(), packet, this);
             PlayerPacketOutEvent event = new PlayerPacketOutEvent(player, serverPacket);
             outgoing.call(event);
             if (event.isCancelled()) return;
@@ -307,9 +307,9 @@ public class PlayerSocketConnection extends PlayerConnection {
             var buffer = framedPacket.body();
             writeBufferSync(buffer, 0, buffer.limit());
         } else if (packet instanceof CachedPacket cachedPacket) {
-            var buffer = cachedPacket.body(getConnectionState());
+            var buffer = cachedPacket.body(getConnectionState(), this);
             if (buffer != null) writeBufferSync(buffer, buffer.position(), buffer.remaining());
-            else writeServerPacketSync(cachedPacket.packet(getConnectionState()), compressed);
+            else writeServerPacketSync(cachedPacket.packet(getConnectionState(), this), compressed);
         } else if (packet instanceof LazyPacket lazyPacket) {
             writeServerPacketSync(lazyPacket.packet(), compressed);
         } else {

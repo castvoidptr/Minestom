@@ -15,8 +15,8 @@ import java.util.function.Consumer;
 
 public class ItemStackImpl implements ItemStack, IComponentable {
     private final Material material;
-    private final int amount;
-    public final DataComponentMap components;
+    private int amount;
+    public DataComponentMap components;
     public ItemStackImpl(Material material, int amount, DataComponentMap components)
     {
         this.material = material;
@@ -91,12 +91,17 @@ public class ItemStackImpl implements ItemStack, IComponentable {
     @Override
     public @NotNull ItemStack withAmount(int amount) {
         if (amount <= 0) return ItemStack.AIR;
-        return create(material, amount, components);
+
+        this.amount = amount;
+
+        return this;
     }
 
     @Override
     public @NotNull <T> ItemStack with(@NotNull DataComponent<T> component, @NotNull T value) {
-        return new ItemStackImpl(material, amount, components.set(component, value));
+        this.components.set(component, value);
+
+        return this;
     }
 
     @Override
@@ -104,7 +109,10 @@ public class ItemStackImpl implements ItemStack, IComponentable {
         // We can be slightly smart here. If the component is not present, this will always be a noop.
         // No need to make a new patch with the removal only for it to be removed again when doing a diff.
         if (get(component) == null) return this;
-        return new ItemStackImpl(material, amount, components.remove(component));
+
+        this.components.remove(component);
+
+        return this;
     }
 
     @Override

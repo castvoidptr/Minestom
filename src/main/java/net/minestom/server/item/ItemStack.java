@@ -119,7 +119,7 @@ public interface ItemStack extends TagReadable, DataComponent.Holder, HoverEvent
 
     @Contract(value = "_, -> new", pure = true)
     default @NotNull ItemStack withAmount(@NotNull IntUnaryOperator intUnaryOperator) {
-        return withAmount(intUnaryOperator.applyAsInt(amount()));
+        return withAmount(amount());
     }
 
     /**
@@ -171,7 +171,7 @@ public interface ItemStack extends TagReadable, DataComponent.Holder, HoverEvent
 
     @Contract(pure = true)
     default int maxStackSize() {
-        return get(ItemComponent.MAX_STACK_SIZE, 64);
+        return 64;
     }
 
     @Contract(value = "_, -> new", pure = true)

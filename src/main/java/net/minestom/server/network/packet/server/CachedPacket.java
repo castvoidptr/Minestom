@@ -2,6 +2,8 @@ package net.minestom.server.network.packet.server;
 
 import net.minestom.server.network.ConnectionState;
 import net.minestom.server.ServerFlag;
+import net.minestom.server.network.player.PlayerConnection;
+import net.minestom.server.network.player.PlayerSocketConnection;
 import net.minestom.server.utils.PacketUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -35,23 +37,23 @@ public final class CachedPacket implements SendablePacket {
         this.packet = null;
     }
 
-    public @NotNull ServerPacket packet(@NotNull ConnectionState state) {
-        FramedPacket cache = updatedCache(state);
+    public @NotNull ServerPacket packet(@NotNull ConnectionState state, PlayerSocketConnection conn) {
+        FramedPacket cache = updatedCache(state, conn);
         return cache != null ? cache.packet() : packetSupplier.get();
     }
 
-    public @Nullable ByteBuffer body(@NotNull ConnectionState state) {
-        FramedPacket cache = updatedCache(state);
+    public @Nullable ByteBuffer body(@NotNull ConnectionState state, PlayerSocketConnection conn) {
+        FramedPacket cache = updatedCache(state, conn);
         return cache != null ? cache.body() : null;
     }
 
-    private @Nullable FramedPacket updatedCache(@NotNull ConnectionState state) {
+    private @Nullable FramedPacket updatedCache(@NotNull ConnectionState state, PlayerSocketConnection conn) {
         if (!ServerFlag.CACHED_PACKET)
             return null;
         SoftReference<FramedPacket> ref = packet;
         FramedPacket cache;
         if (ref == null || (cache = ref.get()) == null) {
-            cache = PacketUtils.allocateTrimmedPacket(state, packetSupplier.get());
+            cache = PacketUtils.allocateTrimmedPacket(state, packetSupplier.get(), conn);
             this.packet = new SoftReference<>(cache);
         }
         return cache;

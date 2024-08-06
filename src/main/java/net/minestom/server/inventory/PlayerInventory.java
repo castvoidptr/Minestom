@@ -183,6 +183,9 @@ public non-sealed class PlayerInventory extends AbstractInventory implements Equ
     private WindowItemsPacket createWindowItemsPacket() {
         ItemStack[] convertedSlots = new ItemStack[INVENTORY_SIZE];
         for (int i = 0; i < itemStacks.length; i++) {
+
+            System.out.println(itemStacks[i].getClass());
+
             final int slot = convertToPacketSlot(i);
             convertedSlots[slot] = itemStacks[i];
         }

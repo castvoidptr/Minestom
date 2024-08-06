@@ -164,7 +164,7 @@ public final class PacketUtils {
         }
         final Player exception = entity instanceof Player ? (Player) entity : null;
         ViewableStorage storage = VIEWABLE_STORAGE_MAP.get(viewable, (unused) -> new ViewableStorage());
-        storage.append(viewable, serverPacket, exception);
+        storage.append(viewable, serverPacket, exception, null);
     }
 
     @ApiStatus.Experimental
@@ -315,20 +315,20 @@ public final class PacketUtils {
     }
 
     @ApiStatus.Internal
-    public static ByteBuffer createFramedPacket(@NotNull ConnectionState state, @NotNull ByteBuffer buffer, @NotNull ServerPacket packet, boolean compression) {
-        writeFramedPacket(state, buffer, packet, compression);
+    public static ByteBuffer createFramedPacket(@NotNull ConnectionState state, @NotNull ByteBuffer buffer, @NotNull ServerPacket packet, boolean compression, PlayerSocketConnection conn) {
+        writeFramedPacket(state, buffer, packet, compression, conn);
         return buffer.flip();
     }
 
     @ApiStatus.Internal
-    public static ByteBuffer createFramedPacket(@NotNull ConnectionState state, @NotNull ByteBuffer buffer, @NotNull ServerPacket packet) {
-        return createFramedPacket(state, buffer, packet, MinecraftServer.getCompressionThreshold() > 0);
+    public static ByteBuffer createFramedPacket(@NotNull ConnectionState state, @NotNull ByteBuffer buffer, @NotNull ServerPacket packet, PlayerSocketConnection conn) {
+        return createFramedPacket(state, buffer, packet, MinecraftServer.getCompressionThreshold() > 0, conn);
     }
 
     @ApiStatus.Internal
-    public static FramedPacket allocateTrimmedPacket(@NotNull ConnectionState state, @NotNull ServerPacket packet) {
+    public static FramedPacket allocateTrimmedPacket(@NotNull ConnectionState state, @NotNull ServerPacket packet, PlayerSocketConnection connection) {
         try (var hold = ObjectPool.PACKET_POOL.hold()) {
-            final ByteBuffer temp = PacketUtils.createFramedPacket(state, hold.get(), packet);
+            final ByteBuffer temp = PacketUtils.createFramedPacket(state, hold.get(), packet, connection);
             final int size = temp.remaining();
             final ByteBuffer buffer = ByteBuffer.allocateDirect(size).put(0, temp, 0, size);
             return new FramedPacket(packet, buffer);
@@ -340,10 +340,11 @@ public final class PacketUtils {
         private final Int2ObjectMap<LongArrayList> entityIdMap = new Int2ObjectOpenHashMap<>();
         private final BinaryBuffer buffer = ObjectPool.BUFFER_POOL.getAndRegister(this);
 
-        private synchronized void append(Viewable viewable, ServerPacket serverPacket, @Nullable Player exception) {
+        private synchronized void append(Viewable viewable, ServerPacket serverPacket, @Nullable Player exception, PlayerSocketConnection conn) {
             try (var hold = ObjectPool.PACKET_POOL.hold()) {
-                // Viewable storage is only used for play packets, so fine to assume this.
-                final ByteBuffer framedPacket = createFramedPacket(ConnectionState.PLAY, hold.get(), serverPacket);
+                // Viewable storage is only used for play packets, so fine to assume this
+
+                final ByteBuffer framedPacket = createFramedPacket(ConnectionState.PLAY, hold.get(), serverPacket, conn);
                 final int packetSize = framedPacket.limit();
                 if (packetSize >= buffer.capacity()) {
                     process(viewable);

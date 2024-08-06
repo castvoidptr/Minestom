@@ -47,14 +47,16 @@ public record SetSlotPacket(byte windowId, int stateId, short slot,
 
     @Override
     public @NotNull ServerPacket copyWithOperator(@NotNull UnaryOperator<Component> operator) {
-        return new SetSlotPacket(this.windowId, this.stateId, this.slot, this.itemStack
+        /*return new SetSlotPacket(this.windowId, this.stateId, this.slot, this.itemStack
                 .with(ItemComponent.CUSTOM_NAME, operator)
                 .with(ItemComponent.ITEM_NAME, operator)
                 .with(ItemComponent.LORE, (UnaryOperator<List<Component>>) lines -> {
                     final var translatedComponents = new ArrayList<Component>();
                     lines.forEach(component -> translatedComponents.add(operator.apply(component)));
                     return translatedComponents;
-                }));
+                }));*/
+
+        return new SetSlotPacket(this.windowId, this.stateId, this.slot, this.itemStack);
     }
 
     /**
